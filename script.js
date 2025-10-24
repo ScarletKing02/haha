@@ -1,14 +1,9 @@
-const audioFileInput = document.getElementById('audioFile');
-const audioUrlInput = document.getElementById('audioUrl');
-const loadUrlBtn = document.getElementById('loadUrl');
 const playPauseBtn = document.getElementById('playPause');
 const terminal = document.getElementById('terminal');
 const content = document.getElementById('content');
 const cursor = document.getElementById('cursor');
 
-let audio = new Audio();
-audio.crossOrigin = "anonymous";
-
+let audio = new Audio('still_alive.mp3'); // automatically load local MP3
 let lyrics = [
   {t:0.5, text:"This was a triumph."},
   {t:2.5, text:"I'm making a note here:"},
@@ -85,7 +80,7 @@ function typeLine(text){
   terminal.scrollTop = terminal.scrollHeight;
   const baseMs = 28;
   let i = 0;
-  stopTyping();
+  clearInterval(typingTask);
   typingTask = setInterval(() => {
     if(i <= text.length){
       node.textContent = text.slice(0,i);
@@ -101,8 +96,6 @@ function typeLine(text){
     if(el !== node && idx < content.children.length - 1) el.className = 'line past';
   });
 }
-
-function stopTyping(){ if(typingTask){ clearInterval(typingTask); typingTask=null; } }
 
 function startSync(){
   scheduledIndex = 0;
@@ -120,7 +113,6 @@ function startSync(){
 }
 
 playPauseBtn.addEventListener('click', async ()=>{
-  if(!audio.src) return alert('Load an audio file first.');
   if(!playing){
     await audio.play().catch(()=>alert('Press Play again after interaction.'));
     playing = true;
@@ -130,24 +122,7 @@ playPauseBtn.addEventListener('click', async ()=>{
     audio.pause();
     playing = false;
     playPauseBtn.textContent = 'Play';
-    stopTyping();
+    clearInterval(typingTask);
   }
 });
 
-audioFileInput.addEventListener('change', e=>{
-  const f = e.target.files[0];
-  if(!f) return;
-  audio.src = URL.createObjectURL(f);
-  audio.load();
-  playing = false;
-  playPauseBtn.textContent='Play';
-});
-
-loadUrlBtn.addEventListener('click', ()=>{
-  const url = audioUrlInput.value.trim();
-  if(!url) return alert('Paste a direct audio URL.');
-  audio.src = url;
-  audio.load();
-  playing=false;
-  playPauseBtn.textContent='Play';
-});
