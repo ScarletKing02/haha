@@ -3,10 +3,9 @@ const cursor = document.getElementById("cursor");
 const playPauseBtn = document.getElementById("playPause");
 
 const audio = new Audio("audio/still_alive.mp3");
-audio.crossOrigin = "anonymous";
 let playing = false;
 
-// Lyrics
+// Lyrics with timestamps (seconds)
 const lyrics = [
   {t:0.5,text:"This was a triumph."},
   {t:2.5,text:"I'm making a note here:"},
@@ -49,10 +48,10 @@ const lyrics = [
 ];
 
 let scheduledIndex = 0;
-let typingTask = null;
 let allTasks = [];
-let deleteDelay = 1500; // keep line on screen before deleting
-let untypeSpeed = 50;   // per char
+const typeSpeed = 80;      // ms per char
+const deleteDelay = 80;    // wait 80ms after line finishes typing before untyping
+const untypeSpeed = 50;    // ms per char
 
 playPauseBtn.addEventListener("click", ()=>{
   if(!playing){
@@ -63,79 +62,64 @@ playPauseBtn.addEventListener("click", ()=>{
   } else {
     audio.pause();
     playing=false;
-    playPauseBtn.textContent="Play";
     stopAllTasks();
+    playPauseBtn.textContent="Play";
   }
 });
 
-audio.addEventListener("ended", ()=>stopAllTasks());
-
 function startSync(){
-  scheduledIndex=0;
-  content.innerHTML="";
+  scheduledIndex = 0;
+  content.innerHTML = "";
   const interval = setInterval(()=>{
     if(!playing || audio.paused){ clearInterval(interval); return; }
     const t = audio.currentTime;
     while(scheduledIndex < lyrics.length && lyrics[scheduledIndex].t <= t){
-      const line = lyrics[scheduledIndex].text;
-      typeLine(line);
+      typeAndDelete(lyrics[scheduledIndex].text);
       scheduledIndex++;
     }
-  },50);
+  }, 30);
   allTasks.push(interval);
 }
 
-function typeLine(text){
-  stopTyping();
+function typeAndDelete(text){
   const node = document.createElement("div");
-  node.className="line current";
+  node.className = "line current";
   content.appendChild(node);
-  let i=0;
-  typingTask = setInterval(()=>{
-    if(i<=text.length){
+  let i = 0;
+
+  // Type
+  const typeInterval = setInterval(()=>{
+    if(i <= text.length){
       node.textContent = text.slice(0,i);
       content.scrollTop = content.scrollHeight;
       i++;
     } else {
-      clearInterval(typingTask);
-      typingTask=null;
-      setTimeout(()=>untypeLine(node), deleteDelay);
+      clearInterval(typeInterval);
+
+      // Delete after fixed delay
+      setTimeout(()=>{
+        let j = text.length;
+        const deleteInterval = setInterval(()=>{
+          if(j >= 0){
+            node.textContent = text.slice(0,j);
+            j--;
+          } else {
+            clearInterval(deleteInterval);
+            node.remove();
+          }
+        }, untypeSpeed);
+        allTasks.push(deleteInterval);
+      }, deleteDelay);
     }
-  },80);
-  allTasks.push(typingTask);
-}
+  }, typeSpeed);
 
-function untypeLine(node){
-  let j=node.textContent.length;
-  const untype=setInterval(()=>{
-    if(j>=0){
-      node.textContent=node.textContent.slice(0,j);
-      j--;
-    } else { clearInterval(untype); node.remove(); }
-  }, untypeSpeed);
-  allTasks.push(untype);
+  allTasks.push(typeInterval);
 }
-
-function stopTyping(){ if(typingTask){ clearInterval(typingTask); typingTask=null; } }
 
 function stopAllTasks(){
-  allTasks.forEach(t=>{ clearInterval(t); clearTimeout(t); });
-  allTasks=[];
+  allTasks.forEach(t=>{
+    clearInterval(t);
+    clearTimeout(t);
+  });
+  allTasks = [];
 }
-
-// ---------------- Logo ----------------
-const canvas=document.getElementById("logoCanvas");
-const ctx=canvas.getContext("2d");
-const img=new Image();
-img.src="images/aperture_logo.png"; 
-img.onload=()=>{
-  let y=0;
-  const drawRow=()=>{
-    for(let x=0;x<img.width;x++){
-      ctx.drawImage(img,x,y,1,1,x,y,1,1);
-    }
-    y++;
-    if(y<img.height) requestAnimationFrame(drawRow);
-  };
-  drawRow();
-};
