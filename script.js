@@ -108,7 +108,7 @@ function typeLine(text){
         },50); // adjust here to change untyping speed
       }, deleteTimeout);
     }
-  },28);
+  },80);
 }
 
 function stopTyping(){if(typingTask){clearInterval(typingTask);typingTask=null;}}
