@@ -1,0 +1,105 @@
+:root{
+  --bg: #000;
+  --text: #e8f7ff;
+  --muted: #6b8a96;
+}
+
+html,body{
+  height:100%;
+  margin:0;
+  font-family: "Courier New", ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+}
+
+body{
+  background: var(--bg);
+  color: var(--text);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+
+.container{
+  width: min(920px, 96vw);
+  height: min(720px, 86vh);
+  border-radius:6px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  box-shadow: 0 18px 60px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.02);
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+
+/* header controls */
+.topbar{
+  padding:12px 16px;
+  display:flex;
+  gap:10px;
+  align-items:center;
+  border-bottom: 1px solid rgba(255,255,255,0.02);
+  background: linear-gradient(180deg, rgba(255,255,255,0.01), transparent);
+}
+.topbar .hint{color:var(--muted);font-size:13px}
+.controls{margin-left:auto;display:flex;gap:8px;align-items:center}
+input[type="file"]{display:none}
+.btn{
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.06);
+  padding:8px 10px;border-radius:6px;color:var(--text);cursor:pointer;font-weight:600;
+}
+.btn.primary{
+  background: linear-gradient(180deg,#77e3ff,#4fbfff);
+  color:#012;
+  border: none;
+}
+input[type="text"]{
+  min-width:260px;padding:8px;border-radius:6px;border:1px solid rgba(255,255,255,0.03);
+  background:transparent;color:var(--text);
+}
+
+/* terminal area */
+.terminal{
+  flex:1;
+  padding:30px 36px;
+  box-sizing:border-box;
+  font-size:20px;
+  line-height:1.45;
+  overflow:auto;
+  position:relative;
+  background: radial-gradient(circle at 10% 10%, rgba(255,255,255,0.01), transparent 8%), transparent;
+  color:var(--text);
+}
+
+.line {
+  white-space:pre-wrap;
+  opacity:0.98;
+  margin: 6px 0;
+}
+
+.past { color: rgba(200,230,255,0.9); font-size:18px; opacity:0.9 }
+.current { color: #ffffff; font-weight:700; font-size:20px; }
+.future { color: rgba(120,160,180,0.6); font-size:18px; }
+
+/* blinking cursor */
+.cursor {
+  display:inline-block;
+  width:10px;
+  margin-left:6px;
+  background:var(--text);
+  animation: blink 1s step-end infinite;
+  vertical-align:middle;
+  height:1.15em;
+}
+@keyframes blink { 50% { opacity:0 } }
+
+/* small footer */
+.footer{
+  padding:10px 16px;
+  font-size:13px;color:var(--muted);
+  border-top:1px solid rgba(255,255,255,0.02);
+}
+
+/* responsive */
+@media (max-width:720px){
+  .terminal{font-size:16px;padding:18px;}
+}
