@@ -4,7 +4,7 @@
   --muted: #6b8a96;
 }
 
-html, body{
+html,body{
   height:100%;
   margin:0;
   font-family: "Courier New", monospace;
@@ -29,7 +29,7 @@ html, body{
   display:flex;
   justify-content:space-between;
   border-bottom: 1px solid rgba(255,255,255,0.02);
-  z-index:1;
+  z-index:1; /* keep topbar above logo */
   position:relative;
 }
 
@@ -75,17 +75,17 @@ html, body{
 @keyframes blink{50%{opacity:0}}
 
 #logoBox{
-  position: absolute;   /* keeps same as before */
-  bottom: 10px;         /* moved to bottom */
-  right: 10px;          /* still right */
-  width: 180px;
-  height: 180px;
-  pointer-events: none; /* clicks pass through */
-  z-index: 0;           /* behind content */
+  position:absolute;
+  bottom:10px;       /* lower the logo */
+  right:10px;        /* far right corner */
+  width:180px;
+  height:180px;
+  pointer-events:none;
+  z-index:0;         /* behind controls */
 }
 
 #logoCanvas{
-  width: 100%;
-  height: 100%;
-  display: block;
+  width:100%;
+  height:100%;
+  display:block;
 }
