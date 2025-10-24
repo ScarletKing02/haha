@@ -51,8 +51,8 @@ const lyrics = [
 
 let scheduledIndex = 0;
 let typingTask = null;
-let deleteTimeout = 3000; // 3s before untyping
-let untypeSpeed = 50; // ms per char for untyping
+let allTasks = [];
+let untypeSpeed = 50; // ms per char
 
 playPauseBtn.addEventListener("click", ()=>{
   if(!playing){
@@ -60,14 +60,21 @@ playPauseBtn.addEventListener("click", ()=>{
     playing = true;
     playPauseBtn.textContent="Pause";
     startSync();
-  }else{
+  } else {
     audio.pause();
     playing=false;
     playPauseBtn.textContent="Play";
-    stopTyping();
+    stopAllTasks();
   }
 });
 
+audio.addEventListener("ended", ()=>{
+  stopAllTasks();
+  // untype last line
+  if(content.lastChild) untypeLine(content.lastChild);
+});
+
+// ---------------- Typing & Untyping ----------------
 function startSync(){
   scheduledIndex=0;
   content.innerHTML="";
@@ -75,10 +82,20 @@ function startSync(){
     if(!playing || audio.paused){ clearInterval(interval); return; }
     const t = audio.currentTime;
     while(scheduledIndex < lyrics.length && lyrics[scheduledIndex].t <= t){
-      typeLine(lyrics[scheduledIndex].text);
+      const lineText = lyrics[scheduledIndex].text;
+      const prevNode = content.lastChild;
+      typeLine(lineText);
+      // schedule untype of previous line exactly when next line starts
+      if(prevNode) {
+        const nextTime = (scheduledIndex+1 < lyrics.length) ? lyrics[scheduledIndex+1].t : audio.duration;
+        const delay = (nextTime - t)*1000; // convert sec to ms
+        const task = setTimeout(()=>{ untypeLine(prevNode); }, delay);
+        allTasks.push(task);
+      }
       scheduledIndex++;
     }
   },50);
+  allTasks.push(interval);
 }
 
 function typeLine(text){
@@ -95,39 +112,31 @@ function typeLine(text){
     } else {
       clearInterval(typingTask);
       typingTask=null;
-      setTimeout(()=>{
-        let j=text.length;
-        const untype = setInterval(()=>{
-          if(j>=0){
-            node.textContent=text.slice(0,j);
-            j--;
-          }else{
-            clearInterval(untype);
-            node.className="line past";
-          }
-        }, untypeSpeed);
-      }, deleteTimeout);
     }
-  },80); 
+  },80);
+  allTasks.push(typingTask);
 }
 
-function stopTyping(){if(typingTask){clearInterval(typingTask);typingTask=null;}}
-
-// ----------------- Logo Pixel Drawing -----------------
-const canvas=document.getElementById("logoCanvas");
-const ctx=canvas.getContext("2d");
-const img=new Image();
-img.src="aperture_logo.png"; // real logo PNG
-img.onload=()=>{
-  canvas.width=img.width;
-  canvas.height=img.height;
-  let y=0;
-  const drawRow=()=>{
-    for(let x=0;x<img.width;x++){
-      ctx.drawImage(img,x,y,1,1,x,y,1,1);
+function untypeLine(node){
+  let j = node.textContent.length;
+  const untype = setInterval(()=>{
+    if(j>=0){
+      node.textContent = node.textContent.slice(0,j);
+      j--;
+    } else {
+      clearInterval(untype);
+      node.remove();
     }
-    y++;
-    if(y<img.height) requestAnimationFrame(drawRow);
-  };
-  drawRow();
-};
+  }, untypeSpeed);
+  allTasks.push(untype);
+}
+
+function stopTyping(){ if(typingTask){ clearInterval(typingTask); typingTask=null; } }
+
+function stopAllTasks(){
+  allTasks.forEach(t=>{
+    clearInterval(t);
+    clearTimeout(t);
+  });
+  allTasks=[];
+}
