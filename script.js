@@ -2,12 +2,10 @@ const content = document.getElementById("content");
 const cursor = document.getElementById("cursor");
 const playPauseBtn = document.getElementById("playPause");
 
-// Audio
 const audio = new Audio("still_alive.mp3");
 audio.crossOrigin = "anonymous";
 let playing = false;
 
-// Lyrics with timestamps
 const lyrics = [
   {t:0.5,text:"This was a triumph."},
   {t:2.5,text:"I'm making a note here:"},
@@ -52,7 +50,8 @@ const lyrics = [
 let scheduledIndex = 0;
 let typingTask = null;
 let allTasks = [];
-let untypeSpeed = 50; // ms per char
+let untypeSpeed = 40; // speed of deleting letters (ms)
+let typeSpeed = 80;   // speed of typing letters (ms)
 
 playPauseBtn.addEventListener("click", ()=>{
   if(!playing){
@@ -68,53 +67,47 @@ playPauseBtn.addEventListener("click", ()=>{
   }
 });
 
-audio.addEventListener("ended", ()=>{
-  stopAllTasks();
-  // untype last line
-  if(content.lastChild) untypeLine(content.lastChild);
-});
-
-// ---------------- Typing & Untyping ----------------
 function startSync(){
-  scheduledIndex=0;
-  content.innerHTML="";
-  const interval = setInterval(()=>{
-    if(!playing || audio.paused){ clearInterval(interval); return; }
-    const t = audio.currentTime;
-    while(scheduledIndex < lyrics.length && lyrics[scheduledIndex].t <= t){
-      const lineText = lyrics[scheduledIndex].text;
-      const prevNode = content.lastChild;
-      typeLine(lineText);
-      // schedule untype of previous line exactly when next line starts
-      if(prevNode) {
-        const nextTime = (scheduledIndex+1 < lyrics.length) ? lyrics[scheduledIndex+1].t : audio.duration;
-        const delay = (nextTime - t)*1000; // convert sec to ms
-        const task = setTimeout(()=>{ untypeLine(prevNode); }, delay);
-        allTasks.push(task);
-      }
-      scheduledIndex++;
-    }
-  },50);
-  allTasks.push(interval);
+  scheduledIndex = 0;
+  content.innerHTML = "";
+  processNextLine();
 }
 
-function typeLine(text){
-  stopTyping();
+function processNextLine(){
+  if(scheduledIndex >= lyrics.length) return;
+
+  const line = lyrics[scheduledIndex];
   const node = document.createElement("div");
-  node.className="line current";
+  node.className = "line current";
   content.appendChild(node);
+
+  // type the line
   let i=0;
-  typingTask = setInterval(()=>{
-    if(i<=text.length){
-      node.textContent = text.slice(0,i);
+  const typeInterval = setInterval(()=>{
+    if(i<=line.text.length){
+      node.textContent = line.text.slice(0,i);
       content.scrollTop = content.scrollHeight;
       i++;
     } else {
-      clearInterval(typingTask);
-      typingTask=null;
+      clearInterval(typeInterval);
+      // schedule untyping when next line starts
+      scheduledIndex++;
+      if(scheduledIndex < lyrics.length){
+        const nextLineTime = lyrics[scheduledIndex].t;
+        const delay = (nextLineTime - audio.currentTime)*1000;
+        allTasks.push(setTimeout(()=>{
+          untypeLine(node);
+          processNextLine(); // type next line after scheduling untype
+        }, Math.max(0, delay)));
+      } else {
+        // last line: untype at end of song
+        allTasks.push(setTimeout(()=>{
+          untypeLine(node);
+        }, (audio.duration - audio.currentTime)*1000));
+      }
     }
-  },80);
-  allTasks.push(typingTask);
+  }, typeSpeed);
+  allTasks.push(typeInterval);
 }
 
 function untypeLine(node){
@@ -130,8 +123,6 @@ function untypeLine(node){
   }, untypeSpeed);
   allTasks.push(untype);
 }
-
-function stopTyping(){ if(typingTask){ clearInterval(typingTask); typingTask=null; } }
 
 function stopAllTasks(){
   allTasks.forEach(t=>{
