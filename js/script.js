@@ -2,8 +2,17 @@ const content = document.getElementById("content");
 const cursor = document.getElementById("cursor");
 const playPauseBtn = document.getElementById("playPause");
 
-const audio = new Audio("audio/still_alive.mp3");
+// Audio
+const audio = new Audio("still_alive.mp3");
+audio.crossOrigin = "anonymous";
 let playing = false;
+
+// Typing & deletion speeds
+const typeSpeed = 80;      // ms per character when typing
+const deleteDelay = 80;    // ms to wait after typing before starting deletion
+const untypeSpeed = 50;    // ms per character when deleting
+
+let allTasks = []; // to store all intervals/timeouts
 
 // Lyrics with timestamps (seconds)
 const lyrics = [
@@ -48,11 +57,8 @@ const lyrics = [
 ];
 
 let scheduledIndex = 0;
-let allTasks = [];
-const typeSpeed = 80;      // ms per char
-const deleteDelay = 80;    // wait 80ms after line finishes typing before untyping
-const untypeSpeed = 50;    // ms per char
 
+// ------------------ Play/Pause ------------------
 playPauseBtn.addEventListener("click", ()=>{
   if(!playing){
     audio.play();
@@ -61,49 +67,55 @@ playPauseBtn.addEventListener("click", ()=>{
     startSync();
   } else {
     audio.pause();
-    playing=false;
-    stopAllTasks();
+    playing = false;
     playPauseBtn.textContent="Play";
+    stopAllTasks();
   }
 });
 
+audio.addEventListener("ended", ()=>{
+  stopAllTasks();
+});
+
+// ------------------ Typing & Deleting ------------------
 function startSync(){
   scheduledIndex = 0;
   content.innerHTML = "";
+
   const interval = setInterval(()=>{
     if(!playing || audio.paused){ clearInterval(interval); return; }
     const t = audio.currentTime;
+
     while(scheduledIndex < lyrics.length && lyrics[scheduledIndex].t <= t){
       typeAndDelete(lyrics[scheduledIndex].text);
       scheduledIndex++;
     }
-  }, 30);
+  }, 50);
+
   allTasks.push(interval);
 }
 
+// Types a line and deletes it independently after a short delay
 function typeAndDelete(text){
   const node = document.createElement("div");
   node.className = "line current";
   content.appendChild(node);
-  let i = 0;
 
-  // Type
+  let i = 0;
   const typeInterval = setInterval(()=>{
-    if(i <= text.length){
-      node.textContent = text.slice(0,i);
-      content.scrollTop = content.scrollHeight;
-      i++;
-    } else {
+    node.textContent = text.slice(0, i);
+    content.scrollTop = content.scrollHeight;
+    i++;
+    if(i > text.length){
       clearInterval(typeInterval);
 
-      // Delete after fixed delay
+      // Schedule deletion after deleteDelay
       setTimeout(()=>{
         let j = text.length;
         const deleteInterval = setInterval(()=>{
-          if(j >= 0){
-            node.textContent = text.slice(0,j);
-            j--;
-          } else {
+          node.textContent = text.slice(0, j);
+          j--;
+          if(j < 0){
             clearInterval(deleteInterval);
             node.remove();
           }
@@ -116,6 +128,7 @@ function typeAndDelete(text){
   allTasks.push(typeInterval);
 }
 
+// ------------------ Task Management ------------------
 function stopAllTasks(){
   allTasks.forEach(t=>{
     clearInterval(t);
@@ -123,3 +136,20 @@ function stopAllTasks(){
   });
   allTasks = [];
 }
+
+// ----------------- Logo Pixel Drawing -----------------
+const canvas = document.getElementById("logoCanvas");
+const ctx = canvas.getContext("2d");
+const img = new Image();
+img.src = "aperture_logo.png"; // real logo PNG
+img.onload = ()=>{
+  let y = 0;
+  const drawRow = ()=>{
+    for(let x=0;x<img.width;x++){
+      ctx.drawImage(img,x,y,1,1,x,y,1,1);
+    }
+    y++;
+    if(y<img.height) requestAnimationFrame(drawRow);
+  };
+  drawRow();
+};
