@@ -1,3 +1,4 @@
+// Audio & elements
 const playPauseBtn = document.getElementById('playPause');
 const terminal = document.getElementById('terminal');
 const content = document.getElementById('content');
@@ -9,7 +10,7 @@ let playing = false;
 let typingTask = null;
 let scheduledIndex = 0;
 
-// Big Aperture logo (ASCII)
+// Aperture logo ASCII
 const apertureLogo = [
 "       ___       ",
 "     /     \\     ",
@@ -20,7 +21,7 @@ const apertureLogo = [
 ];
 logoEl.textContent = apertureLogo.join("\n");
 
-// Full lyrics array with approximate timestamps (seconds)
+// Lyrics with timestamps (seconds)
 const lyrics = [
 {t:0.5,text:"This was a triumph."},
 {t:2.5,text:"I'm making a note here:"},
@@ -62,7 +63,7 @@ const lyrics = [
 {t:130,text:"Still alive."}
 ];
 
-// Type a line char by char
+// Type a line
 function typeLine(text){
   const node = document.createElement('div');
   node.className = 'line current';
@@ -82,7 +83,7 @@ function typeLine(text){
   }, 25);
 }
 
-// Untype in reverse
+// Untype line
 function untypeLine(node){
   let i = node.textContent.length;
   const task = setInterval(()=>{
@@ -90,7 +91,10 @@ function untypeLine(node){
       node.textContent = node.textContent.slice(0,i--);
       terminal.scrollTop = terminal.scrollHeight;
     } else clearInterval(task);
-  }, 25);
+    Array.from(content.children).forEach(c=>{
+      if(c !== node) c.className='line past';
+    });
+  },25);
 }
 
 // Sync lyrics to audio
@@ -107,7 +111,7 @@ function startSync(){
   },50);
 }
 
-// Play/pause button
+// Play/pause
 playPauseBtn.addEventListener('click', async ()=>{
   if(!playing){
     await audio.play();
