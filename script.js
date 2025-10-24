@@ -3,7 +3,7 @@ const cursor = document.getElementById("cursor");
 const playPauseBtn = document.getElementById("playPause");
 
 // Audio
-const audio = new Audio("still_alive.mp3");
+const audio = new Audio("audio/still_alive.mp3");
 audio.crossOrigin = "anonymous";
 let playing = false;
 
@@ -50,9 +50,10 @@ const lyrics = [
 ];
 
 let scheduledIndex = 0;
+let typingTask = null;
 let allTasks = [];
-let untypeSpeed = 25; // slower untyping
-let pauseBeforeDelete = 800; // ms line stays before deleting
+let deleteDelay = 1000; // time to keep line on screen
+let untypeSpeed = 50;   // speed per char when deleting
 
 playPauseBtn.addEventListener("click", ()=>{
   if(!playing){
@@ -68,6 +69,10 @@ playPauseBtn.addEventListener("click", ()=>{
   }
 });
 
+audio.addEventListener("ended", ()=>{
+  stopAllTasks();
+});
+
 // ---------------- Typing & Untyping ----------------
 function startSync(){
   scheduledIndex=0;
@@ -76,8 +81,7 @@ function startSync(){
     if(!playing || audio.paused){ clearInterval(interval); return; }
     const t = audio.currentTime;
     while(scheduledIndex < lyrics.length && lyrics[scheduledIndex].t <= t){
-      const lineText = lyrics[scheduledIndex].text;
-      typeLine(lineText);
+      typeLine(lyrics[scheduledIndex].text);
       scheduledIndex++;
     }
   },50);
@@ -85,25 +89,23 @@ function startSync(){
 }
 
 function typeLine(text){
+  stopTyping();
   const node = document.createElement("div");
   node.className="line current";
   content.appendChild(node);
   let i=0;
-  const typeInterval = setInterval(()=>{
+  typingTask = setInterval(()=>{
     if(i<=text.length){
       node.textContent = text.slice(0,i);
       content.scrollTop = content.scrollHeight;
       i++;
     } else {
-      clearInterval(typeInterval);
-      // schedule untyping after pause
-      const deleteTimeout = setTimeout(()=>{
-        untypeLine(node);
-      }, pauseBeforeDelete);
-      allTasks.push(deleteTimeout);
+      clearInterval(typingTask);
+      typingTask=null;
+      setTimeout(()=>{ untypeLine(node); }, deleteDelay);
     }
-  }, 80);
-  allTasks.push(typeInterval);
+  },80);
+  allTasks.push(typingTask);
 }
 
 function untypeLine(node){
@@ -120,6 +122,8 @@ function untypeLine(node){
   allTasks.push(untype);
 }
 
+function stopTyping(){ if(typingTask){ clearInterval(typingTask); typingTask=null; } }
+
 function stopAllTasks(){
   allTasks.forEach(t=>{
     clearInterval(t);
@@ -128,11 +132,11 @@ function stopAllTasks(){
   allTasks=[];
 }
 
-// ---------------- Logo Drawing -----------------
+// ---------------- Logo ----------------
 const canvas=document.getElementById("logoCanvas");
 const ctx=canvas.getContext("2d");
 const img=new Image();
-img.src="aperture_logo.png"; // place the real PNG in same folder
+img.src="images/aperture_logo.png"; // adjust folder
 img.onload=()=>{
   let y=0;
   const drawRow=()=>{
