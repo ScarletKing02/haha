@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Still Alive — Terminal Visualizer (type-synced)</title>
+<title>Still Alive — Terminal Visualizer</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -13,27 +13,19 @@
       <div class="hint">(Portal end-credits style)</div>
 
       <div class="controls">
-        <label class="btn" title="Choose a local audio file">
-          Load audio
-          <input id="audioFile" type="file" accept="audio/*">
-        </label>
-
-        <input id="audioUrl" type="text" placeholder="or paste a direct audio file URL (raw .mp3)"/>
-        <button id="loadUrl" class="btn">Load URL</button>
-
         <button id="playPause" class="btn primary">Play</button>
       </div>
     </div>
 
     <div id="terminal" class="terminal" tabindex="0" aria-live="polite" aria-atomic="false">
       <div id="content">
-        <div class="line future">[Demo ready — load audio to sync real song]</div>
+        <div class="line future">Press Play to start the song & visuals.</div>
       </div>
       <div id="cursor" class="cursor" aria-hidden="true"></div>
     </div>
 
     <div class="footer">
-      Tip: GitHub Pages raw audio URLs work well. You must have the right to host/play the MP3 you use.
+      All content runs locally—just press Play.
     </div>
   </div>
 
