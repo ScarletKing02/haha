@@ -29,6 +29,8 @@ html,body{
   display:flex;
   justify-content:space-between;
   border-bottom: 1px solid rgba(255,255,255,0.02);
+  z-index:1; /* keep topbar above logo */
+  position:relative;
 }
 
 .btn{
@@ -74,11 +76,12 @@ html,body{
 
 #logoBox{
   position:absolute;
-  bottom:20px; /* lowered */
-  right:20px;
+  bottom:10px;       /* lower the logo */
+  right:10px;        /* far right corner */
   width:180px;
   height:180px;
   pointer-events:none;
+  z-index:0;         /* behind controls */
 }
 
 #logoCanvas{
