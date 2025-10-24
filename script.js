@@ -100,13 +100,13 @@ playPauseBtn.addEventListener('click', () => {
   }
 });
 
-// Simple pixel logo (draws in canvas)
+// Pixel logo in bottom-right
 const canvas = document.getElementById('logoCanvas');
 const ctx = canvas.getContext('2d');
 ctx.fillStyle = 'orange';
 const size = 10;
 
-// Draw a simple approximation of Aperture logo
+// simple approximation of Aperture logo
 const positions = [
   [2,0],[3,0],[4,0],
   [5,1],[6,2],[6,3],
