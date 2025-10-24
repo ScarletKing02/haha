@@ -1,6 +1,6 @@
 :root{
   --bg: #000;
-  --text: #e8f7ff;
+  --text: orange; /* changed from blue to orange */
   --muted: #6b8a96;
 }
 
@@ -41,23 +41,17 @@ body{
 }
 .topbar .hint{color:var(--muted);font-size:13px}
 .controls{margin-left:auto;display:flex;gap:8px;align-items:center}
-input[type="file"]{display:none}
 .btn{
   background: transparent;
   border: 1px solid rgba(255,255,255,0.06);
   padding:8px 10px;border-radius:6px;color:var(--text);cursor:pointer;font-weight:600;
 }
 .btn.primary{
-  background: linear-gradient(180deg,#77e3ff,#4fbfff);
+  background: linear-gradient(180deg,#ffb347,#ffcc33);
   color:#012;
   border: none;
 }
-input[type="text"]{
-  min-width:260px;padding:8px;border-radius:6px;border:1px solid rgba(255,255,255,0.03);
-  background:transparent;color:var(--text);
-}
 
-/* terminal area */
 .terminal{
   flex:1;
   padding:30px 36px;
@@ -76,11 +70,10 @@ input[type="text"]{
   margin: 6px 0;
 }
 
-.past { color: rgba(200,230,255,0.9); font-size:18px; opacity:0.9 }
-.current { color: #ffffff; font-weight:700; font-size:20px; }
-.future { color: rgba(120,160,180,0.6); font-size:18px; }
+.past { color: rgba(255,165,0,0.7); font-size:18px; opacity:0.9 }
+.current { color: orange; font-weight:700; font-size:20px; }
+.future { color: rgba(255,165,0,0.4); font-size:18px; }
 
-/* blinking cursor */
 .cursor {
   display:inline-block;
   width:10px;
@@ -92,14 +85,12 @@ input[type="text"]{
 }
 @keyframes blink { 50% { opacity:0 } }
 
-/* small footer */
 .footer{
   padding:10px 16px;
   font-size:13px;color:var(--muted);
   border-top:1px solid rgba(255,255,255,0.02);
 }
 
-/* responsive */
 @media (max-width:720px){
   .terminal{font-size:16px;padding:18px;}
 }
