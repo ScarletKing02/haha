@@ -1,33 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Still Alive — Terminal Visualizer</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Still Alive — Terminal Visualizer</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div class="container">
+    <div class="topbar">
+      <div class="title">Still Alive — Terminal typing visualizer</div>
+      <div class="controls">
+        <button id="playPause" class="btn primary">Play</button>
+      </div>
+    </div>
 
-<div class="container">
-  <div class="topbar">
-    <div class="title">Still Alive — Terminal typing visualizer</div>
-    <div class="controls">
-      <button id="playPause" class="btn primary">Play</button>
+    <div id="terminal" class="terminal" tabindex="0" aria-live="polite" aria-atomic="false">
+      <div id="content">
+        <div class="line future">Press Play to start the song and lyrics.</div>
+      </div>
+      <div id="cursor" class="cursor" aria-hidden="true"></div>
+    </div>
+
+    <div id="logoBox">
+      <canvas id="logoCanvas"></canvas>
     </div>
   </div>
 
-  <div id="terminal" class="terminal" tabindex="0" aria-live="polite">
-    <div id="content"></div>
-    <div id="cursor" class="cursor"></div>
-  </div>
-
-  <!-- Logo canvas -->
-  <div id="logoBox">
-    <canvas id="logoCanvas" width="180" height="180"></canvas>
-  </div>
-
-</div>
-
-<script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
