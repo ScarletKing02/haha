@@ -2,12 +2,11 @@ const content = document.getElementById("content");
 const cursor = document.getElementById("cursor");
 const playPauseBtn = document.getElementById("playPause");
 
-// Audio
 const audio = new Audio("audio/still_alive.mp3");
 audio.crossOrigin = "anonymous";
 let playing = false;
 
-// Lyrics with timestamps
+// Lyrics
 const lyrics = [
   {t:0.5,text:"This was a triumph."},
   {t:2.5,text:"I'm making a note here:"},
@@ -52,8 +51,8 @@ const lyrics = [
 let scheduledIndex = 0;
 let typingTask = null;
 let allTasks = [];
-let deleteDelay = 1000; // time to keep line on screen
-let untypeSpeed = 50;   // speed per char when deleting
+let deleteDelay = 1500; // keep line on screen before deleting
+let untypeSpeed = 50;   // per char
 
 playPauseBtn.addEventListener("click", ()=>{
   if(!playing){
@@ -69,11 +68,8 @@ playPauseBtn.addEventListener("click", ()=>{
   }
 });
 
-audio.addEventListener("ended", ()=>{
-  stopAllTasks();
-});
+audio.addEventListener("ended", ()=>stopAllTasks());
 
-// ---------------- Typing & Untyping ----------------
 function startSync(){
   scheduledIndex=0;
   content.innerHTML="";
@@ -81,7 +77,8 @@ function startSync(){
     if(!playing || audio.paused){ clearInterval(interval); return; }
     const t = audio.currentTime;
     while(scheduledIndex < lyrics.length && lyrics[scheduledIndex].t <= t){
-      typeLine(lyrics[scheduledIndex].text);
+      const line = lyrics[scheduledIndex].text;
+      typeLine(line);
       scheduledIndex++;
     }
   },50);
@@ -102,22 +99,19 @@ function typeLine(text){
     } else {
       clearInterval(typingTask);
       typingTask=null;
-      setTimeout(()=>{ untypeLine(node); }, deleteDelay);
+      setTimeout(()=>untypeLine(node), deleteDelay);
     }
   },80);
   allTasks.push(typingTask);
 }
 
 function untypeLine(node){
-  let j = node.textContent.length;
-  const untype = setInterval(()=>{
+  let j=node.textContent.length;
+  const untype=setInterval(()=>{
     if(j>=0){
-      node.textContent = node.textContent.slice(0,j);
+      node.textContent=node.textContent.slice(0,j);
       j--;
-    } else {
-      clearInterval(untype);
-      node.remove();
-    }
+    } else { clearInterval(untype); node.remove(); }
   }, untypeSpeed);
   allTasks.push(untype);
 }
@@ -125,10 +119,7 @@ function untypeLine(node){
 function stopTyping(){ if(typingTask){ clearInterval(typingTask); typingTask=null; } }
 
 function stopAllTasks(){
-  allTasks.forEach(t=>{
-    clearInterval(t);
-    clearTimeout(t);
-  });
+  allTasks.forEach(t=>{ clearInterval(t); clearTimeout(t); });
   allTasks=[];
 }
 
@@ -136,7 +127,7 @@ function stopAllTasks(){
 const canvas=document.getElementById("logoCanvas");
 const ctx=canvas.getContext("2d");
 const img=new Image();
-img.src="images/aperture_logo.png"; // adjust folder
+img.src="images/aperture_logo.png"; 
 img.onload=()=>{
   let y=0;
   const drawRow=()=>{
