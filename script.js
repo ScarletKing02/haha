@@ -1,4 +1,5 @@
 const content = document.getElementById("content");
+const cursor = document.getElementById("cursor");
 const playPauseBtn = document.getElementById("playPause");
 
 // Audio
@@ -6,6 +7,7 @@ const audio = new Audio("still_alive.mp3");
 audio.crossOrigin = "anonymous";
 let playing = false;
 
+// Lyrics with timestamps
 const lyrics = [
   {t:0.5,text:"This was a triumph."},
   {t:2.5,text:"I'm making a note here:"},
@@ -47,12 +49,10 @@ const lyrics = [
   {t:130,text:"Still alive."}
 ];
 
-
 let scheduledIndex = 0;
 let allTasks = [];
-let typeSpeed = 80;     // ms per character
-let displayTime = 800;  // ms to stay on screen before untyping
-let untypeSpeed = 50;   // ms per character
+let untypeSpeed = 25; // slower untyping
+let pauseBeforeDelete = 800; // ms line stays before deleting
 
 playPauseBtn.addEventListener("click", ()=>{
   if(!playing){
@@ -68,13 +68,16 @@ playPauseBtn.addEventListener("click", ()=>{
   }
 });
 
+// ---------------- Typing & Untyping ----------------
 function startSync(){
-  scheduledIndex = 0;
+  scheduledIndex=0;
+  content.innerHTML="";
   const interval = setInterval(()=>{
     if(!playing || audio.paused){ clearInterval(interval); return; }
     const t = audio.currentTime;
     while(scheduledIndex < lyrics.length && lyrics[scheduledIndex].t <= t){
-      typeLine(lyrics[scheduledIndex].text);
+      const lineText = lyrics[scheduledIndex].text;
+      typeLine(lineText);
       scheduledIndex++;
     }
   },50);
@@ -85,38 +88,36 @@ function typeLine(text){
   const node = document.createElement("div");
   node.className="line current";
   content.appendChild(node);
-  
-  let i = 0;
+  let i=0;
   const typeInterval = setInterval(()=>{
-    if(i <= text.length){
+    if(i<=text.length){
       node.textContent = text.slice(0,i);
       content.scrollTop = content.scrollHeight;
       i++;
     } else {
       clearInterval(typeInterval);
-
-      // After fixed displayTime, untype this line
-      const timeout = setTimeout(()=>{
+      // schedule untyping after pause
+      const deleteTimeout = setTimeout(()=>{
         untypeLine(node);
-      }, displayTime);
-      allTasks.push(timeout);
+      }, pauseBeforeDelete);
+      allTasks.push(deleteTimeout);
     }
-  }, typeSpeed);
+  }, 80);
   allTasks.push(typeInterval);
 }
 
 function untypeLine(node){
   let j = node.textContent.length;
-  const interval = setInterval(()=>{
-    if(j >= 0){
+  const untype = setInterval(()=>{
+    if(j>=0){
       node.textContent = node.textContent.slice(0,j);
       j--;
     } else {
-      clearInterval(interval);
+      clearInterval(untype);
       node.remove();
     }
   }, untypeSpeed);
-  allTasks.push(interval);
+  allTasks.push(untype);
 }
 
 function stopAllTasks(){
@@ -124,7 +125,22 @@ function stopAllTasks(){
     clearInterval(t);
     clearTimeout(t);
   });
-  allTasks = [];
+  allTasks=[];
 }
 
-
+// ---------------- Logo Drawing -----------------
+const canvas=document.getElementById("logoCanvas");
+const ctx=canvas.getContext("2d");
+const img=new Image();
+img.src="aperture_logo.png"; // place the real PNG in same folder
+img.onload=()=>{
+  let y=0;
+  const drawRow=()=>{
+    for(let x=0;x<img.width;x++){
+      ctx.drawImage(img,x,y,1,1,x,y,1,1);
+    }
+    y++;
+    if(y<img.height) requestAnimationFrame(drawRow);
+  };
+  drawRow();
+};
