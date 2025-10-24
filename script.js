@@ -94,7 +94,7 @@ function untypeLine(node){
     Array.from(content.children).forEach(c=>{
       if(c !== node) c.className='line past';
     });
-  },25);
+  },38);
 }
 
 // Sync lyrics to audio
