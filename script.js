@@ -1,4 +1,5 @@
 const content = document.getElementById("content");
+const cursor = document.getElementById("cursor");
 const playPauseBtn = document.getElementById("playPause");
 
 // Audio
@@ -6,14 +7,14 @@ const audio = new Audio("still_alive.mp3");
 audio.crossOrigin = "anonymous";
 let playing = false;
 
-// Typing/deletion settings
-const typeSpeed = 80;      // ms per character
-const deleteDelay = 80;    // ms to wait after typing before deleting
-const untypeSpeed = 50;    // ms per character during deletion
+// Typing & deletion speeds
+const typeSpeed = 80;      // ms per character when typing
+const deleteDelay = 80;    // ms to wait after typing before starting deletion
+const untypeSpeed = 50;    // ms per character when deleting
 
-let allTasks = []; // store intervals/timeouts
+let allTasks = []; // to store all intervals/timeouts
 
-// Lyrics with timestamps
+// Lyrics with timestamps (seconds)
 const lyrics = [
   {t:0.5,text:"This was a triumph."},
   {t:2.5,text:"I'm making a note here:"},
@@ -76,7 +77,7 @@ audio.addEventListener("ended", ()=>{
   stopAllTasks();
 });
 
-// ------------------ Typing + Independent Deletion ------------------
+// ------------------ Typing & Deleting ------------------
 function startSync(){
   scheduledIndex = 0;
   content.innerHTML = "";
@@ -94,6 +95,7 @@ function startSync(){
   allTasks.push(interval);
 }
 
+// Types a line and deletes it independently after a short delay
 function typeAndDelete(text){
   const node = document.createElement("div");
   node.className = "line current";
@@ -101,17 +103,17 @@ function typeAndDelete(text){
 
   let i = 0;
   const typeInterval = setInterval(()=>{
-    node.textContent = text.slice(0,i);
+    node.textContent = text.slice(0, i);
     content.scrollTop = content.scrollHeight;
     i++;
     if(i > text.length){
       clearInterval(typeInterval);
 
-      // Delete independently after deleteDelay
+      // Schedule deletion after deleteDelay
       setTimeout(()=>{
         let j = text.length;
         const deleteInterval = setInterval(()=>{
-          node.textContent = text.slice(0,j);
+          node.textContent = text.slice(0, j);
           j--;
           if(j < 0){
             clearInterval(deleteInterval);
@@ -126,7 +128,7 @@ function typeAndDelete(text){
   allTasks.push(typeInterval);
 }
 
-// ------------------ Clear all tasks ------------------
+// ------------------ Task Management ------------------
 function stopAllTasks(){
   allTasks.forEach(t=>{
     clearInterval(t);
